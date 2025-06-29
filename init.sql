@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS users (
 
 -- Insert sample data
 INSERT INTO users (name) VALUES 
-('Shyam'),
-('Keshav'),
-('Ram'),
-('Shiv');
+('Random1'),
+('Random2'),
+('Random3'),
+('Random4');

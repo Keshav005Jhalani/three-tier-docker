@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: my-secret-pw 
+      MYSQL_DATABASE: testdb
+    networks:
+      - app-net
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      app-net:
+    environment:
+      DB_HOST: db
+      DB_NAME: testdb
+      DB_USER: root
+      DB_PASS: my-secret-pw
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/users"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  frontend:
+    build:
+      context: ./frontend
+    restart: always
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "80:80"
+    networks:
+      - app-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  app-net:
